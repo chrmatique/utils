@@ -1,0 +1,112 @@
+client:
+  name: basic
+  file-system: device-agnostic
+tools: {}
+targets:
+  "HashCheck-arm64-apple-macosx-debug.module": ["<HashCheck-arm64-apple-macosx-debug.module>"]
+  "HashCheckPackageTests-arm64-apple-macosx-debug.module": ["<HashCheckPackageTests-arm64-apple-macosx-debug.module>"]
+  "HashCheckPackageTests-arm64-apple-macosx-debug.test": ["<HashCheckPackageTests-arm64-apple-macosx-debug.test>"]
+  "HashCheckTests-arm64-apple-macosx-debug.module": ["<HashCheckTests-arm64-apple-macosx-debug.module>"]
+  "PackageStructure": ["<PackageStructure>"]
+  "main": ["<HashCheck-arm64-apple-macosx-debug.module>"]
+  "test": ["<HashCheck-arm64-apple-macosx-debug.module>","<HashCheckPackageTests-arm64-apple-macosx-debug.test>","<HashCheckTests-arm64-apple-macosx-debug.module>"]
+default: "main"
+nodes:
+  "/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/Sources/HashCheck/":
+    is-directory-structure: true
+    content-exclusion-patterns: [".git",".build"]
+  "/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/Tests/HashCheckTests/":
+    is-directory-structure: true
+    content-exclusion-patterns: [".git",".build"]
+commands:
+  "/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheck.build/sources":
+    tool: write-auxiliary-file
+    inputs: ["<sources-file-list>","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/Sources/HashCheck/SHA256.swift"]
+    outputs: ["/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheck.build/sources"]
+    description: "Write auxiliary file /Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheck.build/sources"
+
+  "/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheckPackageTests.build/sources":
+    tool: write-auxiliary-file
+    inputs: ["<sources-file-list>","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheckPackageTests.derived/runner.swift"]
+    outputs: ["/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheckPackageTests.build/sources"]
+    description: "Write auxiliary file /Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheckPackageTests.build/sources"
+
+  "/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheckPackageTests.derived/runner.swift":
+    tool: test-entry-point-tool
+    inputs: []
+    outputs: ["/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheckPackageTests.derived/runner.swift"]
+
+  "/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheckPackageTests.product/Objects.LinkFileList":
+    tool: write-auxiliary-file
+    inputs: ["<link-file-list>","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheck.build/SHA256.swift.o","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheckPackageTests.build/runner.swift.o","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheckTests.build/SHA256Tests.swift.o"]
+    outputs: ["/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheckPackageTests.product/Objects.LinkFileList"]
+    description: "Write auxiliary file /Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheckPackageTests.product/Objects.LinkFileList"
+
+  "/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheckTests.build/sources":
+    tool: write-auxiliary-file
+    inputs: ["<sources-file-list>","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/Tests/HashCheckTests/SHA256Tests.swift"]
+    outputs: ["/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheckTests.build/sources"]
+    description: "Write auxiliary file /Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheckTests.build/sources"
+
+  "/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt":
+    tool: write-auxiliary-file
+    inputs: ["<swift-get-version>","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"]
+    outputs: ["/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"]
+    always-out-of-date: "true"
+    description: "Write auxiliary file /Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+
+  "<HashCheck-arm64-apple-macosx-debug.module>":
+    tool: phony
+    inputs: ["/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheck.build/SHA256.swift.o","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/Modules/HashCheck.swiftmodule"]
+    outputs: ["<HashCheck-arm64-apple-macosx-debug.module>"]
+
+  "<HashCheckPackageTests-arm64-apple-macosx-debug.module>":
+    tool: phony
+    inputs: ["/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheckPackageTests.build/runner.swift.o","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/Modules/HashCheckPackageTests.swiftmodule"]
+    outputs: ["<HashCheckPackageTests-arm64-apple-macosx-debug.module>"]
+
+  "<HashCheckPackageTests-arm64-apple-macosx-debug.test>":
+    tool: phony
+    inputs: ["/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheckPackageTests.xctest/Contents/MacOS/HashCheckPackageTests"]
+    outputs: ["<HashCheckPackageTests-arm64-apple-macosx-debug.test>"]
+
+  "<HashCheckTests-arm64-apple-macosx-debug.module>":
+    tool: phony
+    inputs: ["/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheckTests.build/SHA256Tests.swift.o","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/Modules/HashCheckTests.swiftmodule"]
+    outputs: ["<HashCheckTests-arm64-apple-macosx-debug.module>"]
+
+  "C.HashCheck-arm64-apple-macosx-debug.module":
+    tool: shell
+    inputs: ["/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/Sources/HashCheck/SHA256.swift","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheck.build/sources"]
+    outputs: ["/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheck.build/SHA256.swift.o","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/Modules/HashCheck.swiftmodule"]
+    description: "Compiling Swift Module 'HashCheck' (1 sources)"
+    args: ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc","-module-name","HashCheck","-emit-dependencies","-emit-module","-emit-module-path","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/Modules/HashCheck.swiftmodule","-output-file-map","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheck.build/output-file-map.json","-parse-as-library","-incremental","-c","@/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheck.build/sources","-I","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/Modules","-target","arm64-apple-macosx10.13","-incremental","-enable-batch-mode","-serialize-diagnostics","-index-store-path","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/index/store","-Onone","-enable-testing","-j10","-DSWIFT_PACKAGE","-DDEBUG","-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE","-module-cache-path","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/ModuleCache","-parseable-output","-parse-as-library","-emit-objc-header","-emit-objc-header-path","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheck.build/include/HashCheck-Swift.h","-swift-version","5","-plugin-path","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing","-sdk","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-I","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-L","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-g","-Xcc","-isysroot","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk","-Xcc","-F","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-Xcc","-fPIC","-Xcc","-g"]
+
+  "C.HashCheckPackageTests-arm64-apple-macosx-debug.module":
+    tool: shell
+    inputs: ["/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheckPackageTests.derived/runner.swift","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/Modules/HashCheckTests.swiftmodule","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheckPackageTests.build/sources"]
+    outputs: ["/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheckPackageTests.build/runner.swift.o","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/Modules/HashCheckPackageTests.swiftmodule"]
+    description: "Compiling Swift Module 'HashCheckPackageTests' (1 sources)"
+    args: ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc","-module-name","HashCheckPackageTests","-emit-dependencies","-emit-module","-emit-module-path","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/Modules/HashCheckPackageTests.swiftmodule","-output-file-map","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheckPackageTests.build/output-file-map.json","-parse-as-library","-incremental","-c","@/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheckPackageTests.build/sources","-I","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/Modules","-target","arm64-apple-macosx10.13","-incremental","-enable-batch-mode","-serialize-diagnostics","-index-store-path","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/index/store","-Onone","-enable-testing","-Xfrontend","-enable-cross-import-overlays","-j10","-DSWIFT_PACKAGE","-DDEBUG","-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE","-module-cache-path","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/ModuleCache","-parseable-output","-parse-as-library","-emit-objc-header","-emit-objc-header-path","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheckPackageTests.build/include/HashCheckPackageTests-Swift.h","-plugin-path","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing","-sdk","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-I","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-L","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-g","-Xcc","-isysroot","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk","-Xcc","-F","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-Xcc","-fPIC","-Xcc","-g"]
+
+  "C.HashCheckPackageTests-arm64-apple-macosx-debug.test":
+    tool: shell
+    inputs: ["/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheck.build/SHA256.swift.o","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheckPackageTests.build/runner.swift.o","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheckTests.build/SHA256Tests.swift.o","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheckPackageTests.product/Objects.LinkFileList"]
+    outputs: ["/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheckPackageTests.xctest/Contents/MacOS/HashCheckPackageTests"]
+    description: "Linking ./.build/arm64-apple-macosx/debug/HashCheckPackageTests.xctest/Contents/MacOS/HashCheckPackageTests"
+    args: ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc","-L","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug","-o","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheckPackageTests.xctest/Contents/MacOS/HashCheckPackageTests","-module-name","HashCheckPackageTests","-Xlinker","-no_warn_duplicate_libraries","-Xlinker","-bundle","-Xlinker","-rpath","-Xlinker","@loader_path/../../../","@/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheckPackageTests.product/Objects.LinkFileList","-Xlinker","-rpath","-Xlinker","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-6.2/macosx","-target","arm64-apple-macosx14.0","-Xlinker","-add_ast_path","-Xlinker","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/Modules/HashCheck.swiftmodule","-Xlinker","-add_ast_path","-Xlinker","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/Modules/HashCheckPackageTests.swiftmodule","-Xlinker","-add_ast_path","-Xlinker","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/Modules/HashCheckTests.swiftmodule","-plugin-path","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing","-sdk","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-I","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-L","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-g"]
+
+  "C.HashCheckTests-arm64-apple-macosx-debug.module":
+    tool: shell
+    inputs: ["/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/Tests/HashCheckTests/SHA256Tests.swift","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/Modules/HashCheck.swiftmodule","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheckTests.build/sources"]
+    outputs: ["/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheckTests.build/SHA256Tests.swift.o","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/Modules/HashCheckTests.swiftmodule"]
+    description: "Compiling Swift Module 'HashCheckTests' (1 sources)"
+    args: ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc","-module-name","HashCheckTests","-emit-dependencies","-emit-module","-emit-module-path","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/Modules/HashCheckTests.swiftmodule","-output-file-map","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheckTests.build/output-file-map.json","-parse-as-library","-incremental","-c","@/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheckTests.build/sources","-I","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/Modules","-target","arm64-apple-macosx14.0","-incremental","-enable-batch-mode","-serialize-diagnostics","-index-store-path","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/index/store","-Onone","-enable-testing","-Xfrontend","-enable-cross-import-overlays","-j10","-DSWIFT_PACKAGE","-DDEBUG","-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE","-module-cache-path","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/ModuleCache","-parseable-output","-parse-as-library","-swift-version","5","-plugin-path","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing","-sdk","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-I","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-L","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-g","-Xcc","-isysroot","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk","-Xcc","-F","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-Xcc","-fPIC","-Xcc","-g"]
+
+  "PackageStructure":
+    tool: package-structure-tool
+    inputs: ["/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/Sources/HashCheck/","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/Tests/HashCheckTests/","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/Package.swift","/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/Package.resolved"]
+    outputs: ["<PackageStructure>"]
+    description: "Planning build"
+    allow-missing-inputs: true
+

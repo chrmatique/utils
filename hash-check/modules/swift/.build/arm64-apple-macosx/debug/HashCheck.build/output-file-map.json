@@ -1,0 +1,12 @@
+{
+  "": {
+    "swift-dependencies": "/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheck.build/primary.swiftdeps"
+  },
+  "/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/Sources/HashCheck/SHA256.swift": {
+    "dependencies": "/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheck.build/SHA256.d",
+    "object": "/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheck.build/SHA256.swift.o",
+    "swiftmodule": "/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheck.build/SHA256~partial.swiftmodule",
+    "swift-dependencies": "/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheck.build/SHA256.swiftdeps",
+    "diagnostics": "/Users/croyer/Documents/Cursor Repos/hash-check/modules/swift/.build/arm64-apple-macosx/debug/HashCheck.build/SHA256.dia"
+  }
+}
