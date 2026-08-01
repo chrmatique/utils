@@ -1,0 +1,9 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
+#define SENTENCE_WORDS_MIN 8
+#define SENTENCE_WORDS_MAX 15
+#define PARAGRAPH_SENTENCES_MIN 3
+#define PARAGRAPH_SENTENCES_MAX 7
+
+#endif
