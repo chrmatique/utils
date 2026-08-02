@@ -1,0 +1,12 @@
+# Build artifacts from PyInstaller
+build/
+dist/
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+
+# macOS
+.DS_Store
