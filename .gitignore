@@ -3,3 +3,5 @@
 **/.build
 **/target
 **/debug
+
+sources/hash-check/modules/rust/target
