@@ -1,6 +1,6 @@
 # newgit
 
-Create a `.gitignore` skeleton and optionally initialize a git repository.
+Create a `.gitignore` skeleton, optionally initialize a git repository, and install a secret-scanning pre-commit hook.
 
 ## Quick usage
 
@@ -57,13 +57,48 @@ Force the built-in defaults even if a config file exists:
 ./newgit.py --defaults
 ```
 
+Skip the pre-commit hook installation when running `git init`:
+
+```bash
+./newgit.py --git-init --no-precommit
+```
+
 ## Default ignore patterns
 
+The generated `.gitignore` includes common build, IDE, and macOS artifacts, plus secret- and credential-related files:
+
 ```
+# Editor / IDE
 .cursor/
+
+# Build / debug artifacts
 .build/
 .debug/
+
+# macOS
 .DS_Store
+
+# Secrets and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+*.jks
+id_rsa
+id_rsa.pub
+id_dsa
+id_dsa.pub
+id_ecdsa
+id_ecdsa.pub
+id_ed25519
+id_ed25519.pub
+secrets/
+credentials/
+private/
 ```
 
 ## Configuration
@@ -84,6 +119,17 @@ If the target directory already contains a `.gitignore`, the tool prompts:
 ```
 
 Append mode merges the resolved patterns into the existing file, skipping duplicates.
+
+## Secret-scanning pre-commit hook
+
+When `git init` is run (or when you run `newgit` inside an existing repository), it offers to install a pre-commit hook in `.git/hooks/pre-commit`. The hook scans staged files for:
+
+- Private key blocks (`-----BEGIN ... PRIVATE KEY-----`)
+- AWS access key IDs (`AKIA...`)
+- Lines containing `api_key`, `secret_key`, `private_key`, `auth_token`, or `access_token` followed by a value
+- Sensitive filenames such as `.env`, `.pem`, `.key`, `.p12`, `.pfx`, `.keystore`, and `.jks`
+
+If it finds any of these, the commit is blocked and the offending lines are printed. The hook is written in Python and requires `python3` to be available in the environment where commits are made.
 
 ## Building a standalone binary
 
