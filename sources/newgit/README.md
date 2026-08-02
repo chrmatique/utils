@@ -1,6 +1,6 @@
 # newgit
 
-<img src="https://chrmserve.b-cdn.net/pb-img/newgit.png" width="250" height="250">
+<img src="https://chrmserve.b-cdn.net/pb-img/newgit-logo.png" width="250" height="250">
 
 Create a `.gitignore` skeleton, optionally initialize a git repository, and install a secret-scanning pre-commit hook.
 
