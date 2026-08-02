@@ -1,6 +1,6 @@
 # newgit
 
-![Newgit Logo]("https://chrmserve.b-cdn.net/pb-img/newgit.png")
+![Newgit Logo](ttps://chrmserve.b-cdn.net/pb-img/newgit.png)
 
 Create a `.gitignore` skeleton, optionally initialize a git repository, and install a secret-scanning pre-commit hook.
 
