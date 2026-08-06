@@ -112,6 +112,38 @@ You can provide a persistent list of ignore patterns in a config file:
 
 The file uses one pattern per line. Lines starting with `#` and blank lines are ignored. If the file exists, it replaces the built-in defaults. Use `--defaults` to ignore the config file.
 
+### `newgit.yml`
+
+All optional flags can also be configured via a `newgit.yml` file. `newgit` looks for it first in the target directory, then in the global config directory (`$XDG_CONFIG_HOME/newgit/newgit.yml` or `~/.config/newgit/newgit.yml`).
+
+Supported keys (all optional):
+
+| Key | Type | Description |
+|---|---|---|
+| `path` | string | Target directory (default: `.`) |
+| `ignore` | list | Ignore patterns to write |
+| `defaults` | boolean | Use built-in defaults instead of config file |
+| `no_precommit` | boolean | Do not install the secret-scanning pre-commit hook |
+| `git_init` | boolean | Run `git init` without prompting |
+| `no_git_init` | boolean | Do not run `git init` |
+
+Example `newgit.yml`:
+
+```yaml
+path: .
+ignore:
+  - .venv/
+  - node_modules/
+  - __pycache__/
+  - .DS_Store
+git_init: true
+no_precommit: false
+```
+
+CLI arguments override `newgit.yml` values. `--defaults` still forces the built-in ignore patterns regardless of the config file. `git_init` and `no_git_init` cannot both be set to `true`.
+
+The inline parser supports a small YAML subset: top-level keys, block lists, quoted strings, booleans, numbers, and `null`. Flow lists (e.g. `ignore: [a, b]`) and block scalars (`|`, `>`) are parsed only on a best-effort basis.
+
 ## Existing `.gitignore` behavior
 
 If the target directory already contains a `.gitignore`, the tool prompts:
@@ -129,6 +161,7 @@ When `git init` is run (or when you run `newgit` inside an existing repository),
 - Private key blocks (`-----BEGIN ... PRIVATE KEY-----`)
 - AWS access key IDs (`AKIA...`)
 - Lines containing `api_key`, `secret_key`, `private_key`, `auth_token`, or `access_token` followed by a value
+- Provider-specific key formats for OpenAI, Anthropic, Cursor, DeepSeek, Kimi/Moonshot, and Z.ai (including `sk-...`, `key_...`, and Z.ai `id.secret` keys)
 - Sensitive filenames such as `.env`, `.pem`, `.key`, `.p12`, `.pfx`, `.keystore`, and `.jks`
 
 If it finds any of these, the commit is blocked and the offending lines are printed. The hook is written in Python and requires `python3` to be available in the environment where commits are made.

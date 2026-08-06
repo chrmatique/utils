@@ -63,6 +63,11 @@ BLOCKED_PATTERNS = [
     re.compile(r"\b[pP][rR][iI][vV][aA][tT][eE][_-]?[kK][eE][yY]\s*[:=]\s*['\"]?[A-Za-z0-9_+/=\-]{16,}['\"]?"),
     re.compile(r"\b[aA][uU][tT][hH][_-]?[tT][oO][kK][eE][nN]\s*[:=]\s*['\"]?[A-Za-z0-9_\-]{16,}['\"]?"),
     re.compile(r"\b[aA][cC][cC][eE][sS][sS][_-]?[tT][oO][kK][eE][nN]\s*[:=]\s*['\"]?[A-Za-z0-9_\-]{16,}['\"]?"),
+    # Provider-specific key formats. These catch bare keys even when they are
+    # not assigned to a variable named *_API_KEY.
+    re.compile(r"\bsk-(?:proj-|ant-api\d+-)?[A-Za-z0-9_-]{16,}\b"),  # OpenAI, Anthropic, DeepSeek, Moonshot/Kimi
+    re.compile(r"\bkey_[A-Za-z0-9_-]{20,}\b"),  # Cursor
+    re.compile(r"\b[a-fA-F0-9]{20,}\.[A-Za-z0-9_-]{20,}\b"),  # Z.ai (id.secret)
 ]
 
 SENSITIVE_FILENAMES = {
@@ -137,17 +142,136 @@ if __name__ == "__main__":
 '''
 
 
-def config_path() -> Path | None:
+# ---------------------------------------------------------------------------
+# Inline YAML parser
+# ---------------------------------------------------------------------------
+
+def _strip_yaml_comment(line: str) -> str:
+    """Remove a trailing '#' comment, respecting single/double quotes and escapes."""
+    in_quote: str | None = None
+    escaped = False
+    for i, ch in enumerate(line):
+        if escaped:
+            escaped = False
+            continue
+        if in_quote:
+            if ch == "\\" and in_quote == '"':
+                escaped = True
+                continue
+            if ch == in_quote:
+                in_quote = None
+        elif ch in ('"', "'"):
+            in_quote = ch
+        elif ch == "#":
+            return line[:i]
+    return line
+
+
+def _parse_yaml_scalar(value: str) -> str | int | float | bool | None | list:
+    """Parse a YAML scalar value into a Python object."""
+    value = value.strip()
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in ('"', "'"):
+        inner = value[1:-1]
+        if value[0] == "'":
+            return inner.replace("''", "'")
+        return inner.replace('\\"', '"').replace('\\n', '\n').replace('\\t', '\t').replace('\\\\', '\\')
+    if value == "[]":
+        return []
+    if value.startswith("[") and value.endswith("]"):
+        items = []
+        for item in value[1:-1].split(","):
+            item = item.strip()
+            if item:
+                items.append(_parse_yaml_scalar(item))
+        return items
+    lower = value.lower()
+    if lower in {"true", "yes", "on"}:
+        return True
+    if lower in {"false", "no", "off"}:
+        return False
+    if lower in {"null", "~", "none", ""}:
+        return None
+    try:
+        if "." in value or "e" in value.lower():
+            return float(value)
+        return int(value)
+    except ValueError:
+        return value
+
+
+def parse_yaml_simple(text: str) -> dict:
+    """Parse a small subset of YAML sufficient for newgit configuration.
+
+    Supports top-level keys mapping to scalars or flat lists. Nested mappings
+    are not supported.
+    """
+    result: dict = {}
+    lines = text.splitlines()
+    i = 0
+    while i < len(lines):
+        raw = _strip_yaml_comment(lines[i])
+        stripped = raw.rstrip()
+        if not stripped or not stripped.strip():
+            i += 1
+            continue
+
+        indent = len(stripped) - len(stripped.lstrip())
+        content = stripped.strip()
+        if ":" not in content:
+            i += 1
+            continue
+
+        key, sep, rest = content.partition(":")
+        key = key.strip().lower().replace("-", "_")
+        rest = rest.strip()
+
+        if not rest:
+            # Could be a list or an empty mapping value; consume indented list items.
+            i += 1
+            items: list = []
+            while i < len(lines):
+                next_raw = _strip_yaml_comment(lines[i])
+                next_stripped = next_raw.rstrip()
+                if not next_stripped or not next_stripped.strip():
+                    i += 1
+                    continue
+                next_indent = len(next_stripped) - len(next_stripped.lstrip())
+                if next_indent <= indent:
+                    break
+                item_content = next_stripped.strip()
+                if item_content.startswith("- "):
+                    items.append(_parse_yaml_scalar(item_content[2:]))
+                    i += 1
+                elif item_content.startswith("-") and len(item_content) == 1:
+                    items.append("")
+                    i += 1
+                else:
+                    # Not a list item; end of list.
+                    break
+            result[key] = items
+        else:
+            result[key] = _parse_yaml_scalar(rest)
+            i += 1
+
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Configuration loading and argument resolution
+# ---------------------------------------------------------------------------
+
+def _global_config_dir() -> Path:
     xdg = os.environ.get("XDG_CONFIG_HOME")
     if xdg:
-        return Path(xdg) / "newgit" / "ignore"
-    home = Path.home()
-    if home:
-        return home / ".config" / "newgit" / "ignore"
-    return None
+        return Path(xdg) / "newgit"
+    return Path.home() / ".config" / "newgit"
 
 
-def load_config_file(path: Path) -> list[str] | None:
+def legacy_ignore_path() -> Path:
+    return _global_config_dir() / "ignore"
+
+
+def load_legacy_ignore_file(path: Path) -> list[str] | None:
     if not path.is_file():
         return None
     entries = []
@@ -159,21 +283,89 @@ def load_config_file(path: Path) -> list[str] | None:
     return entries
 
 
-def resolve_entries(cli_ignore: list[str] | None, use_defaults: bool) -> list[str]:
-    if cli_ignore:
+def _config_file_paths(target: Path) -> list[Path]:
+    return [target / "newgit.yml", _global_config_dir() / "newgit.yml"]
+
+
+def load_yaml_config(target: Path) -> dict:
+    """Load newgit.yml from the target directory, then the global config dir."""
+    for path in _config_file_paths(target):
+        if path.is_file():
+            try:
+                text = path.read_text(encoding="utf-8")
+                return parse_yaml_simple(text)
+            except Exception as exc:  # pragma: no cover - defensive
+                print(f"Warning: could not parse {path}: {exc}", file=sys.stderr)
+                return {}
+    return {}
+
+
+def _normalize_ignore(value: list | str | None) -> list[str] | None:
+    if value is None:
+        return None
+    if isinstance(value, str):
+        return [value] if value else []
+    if isinstance(value, list):
+        return [str(item) for item in value if item is not None and str(item)]
+    raise ValueError(f"ignore must be a list or string, got {type(value).__name__}")
+
+
+def resolve_cli_args(args: argparse.Namespace, config: dict) -> argparse.Namespace:
+    """Merge CLI arguments with newgit.yml config values.
+
+    Explicit CLI arguments override config values. Hard-coded defaults are used
+    when neither source provides a value.
+    """
+    config = config or {}
+
+    resolved: dict = {
+        "path": args.path if args.path is not None else config.get("path", "."),
+        "ignore": args.ignore,  # CLI override only
+        "config_ignore": _normalize_ignore(config.get("ignore")),
+        "defaults": args.defaults if args.defaults is not None else config.get("defaults", False),
+        "no_precommit": (
+            args.no_precommit if args.no_precommit is not None else config.get("no_precommit", False)
+        ),
+    }
+    # Handle git_init / no_git_init carefully: an explicit CLI choice wins over
+    # the config file and disables the opposite flag.
+    if args.git_init is not None:
+        resolved["git_init"] = args.git_init
+        resolved["no_git_init"] = False
+    elif args.no_git_init is not None:
+        resolved["no_git_init"] = args.no_git_init
+        resolved["git_init"] = False
+    else:
+        resolved["git_init"] = config.get("git_init", False)
+        resolved["no_git_init"] = config.get("no_git_init", False)
+        if resolved["git_init"] and resolved["no_git_init"]:
+            raise ValueError("git_init and no_git_init cannot both be enabled")
+
+    return argparse.Namespace(**resolved)
+
+
+def resolve_entries(
+    cli_ignore: list[str] | None,
+    use_defaults: bool,
+    config_ignore: list[str] | None = None,
+) -> list[str]:
+    if cli_ignore is not None:
         return cli_ignore
     if use_defaults:
         return DEFAULT_IGNORES
-    cfg = config_path()
-    if cfg:
-        entries = load_config_file(cfg)
-        if entries is not None:
-            return entries
+    if config_ignore is not None:
+        return config_ignore
+    entries = load_legacy_ignore_file(legacy_ignore_path())
+    if entries is not None:
+        return entries
     return DEFAULT_IGNORES
 
 
 def write_gitignore(path: Path, entries: list[str]) -> None:
-    text = HEADER + "\n".join(entries) + "\n"
+    if entries:
+        text = HEADER + "\n".join(entries) + "\n"
+    else:
+        text = HEADER
     path.write_text(text, encoding="utf-8")
 
 
@@ -251,24 +443,37 @@ def main() -> int:
         prog="newgit",
         description="Create a .gitignore skeleton and optionally run git init.",
     )
-    parser.add_argument("path", nargs="?", default=".", help="Target directory (default: current directory)")
-    parser.add_argument("-i", "--ignore", nargs="+", help="Override ignore patterns for this run")
-    parser.add_argument("--defaults", action="store_true", help="Use built-in defaults instead of config file")
-    parser.add_argument("--no-precommit", action="store_true", help="Do not install the secret-scanning pre-commit hook")
+    parser.add_argument("path", nargs="?", default=None, help="Target directory (default: current directory)")
+    parser.add_argument("-i", "--ignore", nargs="+", default=None, help="Override ignore patterns for this run")
+    parser.add_argument("--defaults", action="store_true", default=None, help="Use built-in defaults instead of config file")
+    parser.add_argument("--no-precommit", action="store_true", default=None, help="Do not install the secret-scanning pre-commit hook")
     git_group = parser.add_mutually_exclusive_group()
-    git_group.add_argument("--git-init", action="store_true", dest="git_init", help="Run git init without prompting")
-    git_group.add_argument("--no-git-init", action="store_true", dest="no_git_init", help="Do not run git init")
+    git_group.add_argument("--git-init", action="store_true", dest="git_init", default=None, help="Run git init without prompting")
+    git_group.add_argument("--no-git-init", action="store_true", dest="no_git_init", default=None, help="Do not run git init")
     args = parser.parse_args()
 
+    # Use the CLI path (or cwd) to locate the config file.
+    initial_target = Path(args.path).expanduser().resolve() if args.path else Path.cwd()
+    if not initial_target.is_dir():
+        print(f"Error: {initial_target} is not a directory.", file=sys.stderr)
+        return 1
+
+    config = load_yaml_config(initial_target)
+    try:
+        args = resolve_cli_args(args, config)
+    except ValueError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
+
+    # Apply any path override from the config file.
     target = Path(args.path).expanduser().resolve()
     if not target.is_dir():
         print(f"Error: {target} is not a directory.", file=sys.stderr)
         return 1
 
-    entries = resolve_entries(args.ignore, args.defaults)
-    if not entries:
-        print("No ignore patterns to write.", file=sys.stderr)
-        return 1
+    entries = resolve_entries(args.ignore, args.defaults, config_ignore=args.config_ignore)
+    # An explicit empty config list (e.g. ignore: []) results in an empty
+    # .gitignore containing only the header.
 
     gitignore = target / ".gitignore"
     if gitignore.exists():
