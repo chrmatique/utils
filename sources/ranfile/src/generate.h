@@ -8,12 +8,15 @@ typedef enum {
     MODE_WORDS,
     MODE_SENTENCES,
     MODE_PARAGRAPHS,
+    MODE_SIZE,
+    MODE_MARKDOWN,
 } GenMode;
 
 typedef struct {
     GenMode mode;
     size_t count;
     uint64_t seed;
+    size_t target_size; /* bytes, used when mode == MODE_SIZE */
 } GenOptions;
 
 typedef struct {
@@ -23,5 +26,8 @@ typedef struct {
 
 int generate(const GenOptions *opts, GenResult *out);
 void gen_result_free(GenResult *out);
+
+/* Compress whitespace/newlines into a single space; trailing newline preserved. */
+int gen_compress(GenResult *out);
 
 #endif

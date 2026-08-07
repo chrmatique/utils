@@ -9,13 +9,16 @@ TARGET  = ranfile
 PREFIX  ?= /usr/local
 BINDIR  = $(PREFIX)/bin
 
-.PHONY: all debug clean install
+.PHONY: all debug test clean install
 
 all: $(TARGET)
 
 debug: CFLAGS = -std=c11 -g -O0 -Wall -Wextra -Wpedantic -fsanitize=address -Isrc
 debug: LDFLAGS = -fsanitize=address
 debug: $(TARGET)
+
+test: $(TARGET)
+	python3 -m pytest tests/ -v
 
 $(TARGET): $(OBJS)
 	$(CC) $(LDFLAGS) -o $@ $^
