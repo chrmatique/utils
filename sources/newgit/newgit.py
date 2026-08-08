@@ -106,7 +106,7 @@ def content_has_secret(text: str) -> list[str]:
     for line_no, line in enumerate(text.splitlines(), start=1):
         for pattern in BLOCKED_PATTERNS:
             if pattern.search(line):
-                matches.append(f"line {line_no}: {line.strip()}")
+                matches.append(f"line {line_no}: <REDACTED>")
                 break
     return matches
 
@@ -288,15 +288,15 @@ def _config_file_paths(target: Path) -> list[Path]:
 
 
 def load_yaml_config(target: Path) -> dict:
-    """Load newgit.yml from the target directory, then the global config dir."""
+    """Load newgit.yml from the target directory, then the global config dir.
+
+    Raises an exception if a config file exists but cannot be read or parsed,
+    so configuration errors are not silently ignored.
+    """
     for path in _config_file_paths(target):
         if path.is_file():
-            try:
-                text = path.read_text(encoding="utf-8")
-                return parse_yaml_simple(text)
-            except Exception as exc:  # pragma: no cover - defensive
-                print(f"Warning: could not parse {path}: {exc}", file=sys.stderr)
-                return {}
+            text = path.read_text(encoding="utf-8")
+            return parse_yaml_simple(text)
     return {}
 
 
@@ -416,7 +416,13 @@ def run_git_init(target: Path) -> bool:
         print("git not found in PATH.", file=sys.stderr)
         return False
     result = subprocess.run([git, "init"], cwd=target, check=False)
-    return result.returncode == 0
+    if result.returncode != 0:
+        print(
+            f"Error: git init failed in {target} (exit code {result.returncode}).",
+            file=sys.stderr,
+        )
+        return False
+    return True
 
 
 def install_precommit_hook(target: Path) -> bool:
@@ -458,7 +464,12 @@ def main() -> int:
         print(f"Error: {initial_target} is not a directory.", file=sys.stderr)
         return 1
 
-    config = load_yaml_config(initial_target)
+    try:
+        config = load_yaml_config(initial_target)
+    except Exception as exc:
+        print(f"Error: could not read config file: {exc}", file=sys.stderr)
+        return 1
+
     try:
         args = resolve_cli_args(args, config)
     except ValueError as exc:
