@@ -1,9 +1,10 @@
-# newgit
-
-<img src="https://chrmserve.b-cdn.net/pb-img/newgit-logo.png" width="250" height="250">
+# Newgit
+<img src="https://chrmserve.b-cdn.net/pb-img/newgit-logo.png" width="200" height="200">
 
 Create a `.gitignore` skeleton, optionally initialize a git repository, and install a secret-scanning pre-commit hook.
 
+No external dependencies, all self-contained, all Python.
+You're not you without pre-commit hooks, eat a Newgit
 ## Quick usage
 
 If you have the Python script:
